@@ -8,6 +8,8 @@ import ProductList from "@/components/common/product-list";
 import { db } from "@/db";
 import { productTable } from "@/db/schema";
 
+export const dynamic = "force-dynamic";
+
 const Home = async () => {
   const products = await db.query.productTable.findMany({
     with: {
