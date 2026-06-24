@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -50,7 +51,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCentsToBRL } from "@/helpers/money";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 type Variant = {
   id: string;

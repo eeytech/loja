@@ -1,9 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getCategories } from "@/actions/admin/categories";
 import { getProduct } from "@/actions/admin/products";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 import { ProductForm } from "../_components/product-form";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -46,7 +47,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 type Category = {
   id: string;
