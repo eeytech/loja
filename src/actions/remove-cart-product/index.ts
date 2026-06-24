@@ -1,12 +1,11 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import z from "zod";
 
 import { db } from "@/db";
 import { cartItemTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import { removeProductFromCartSchema } from "./schema";
 
@@ -14,9 +13,7 @@ export const removeProductFromCart = async (
   data: z.infer<typeof removeProductFromCartSchema>,
 ) => {
   removeProductFromCartSchema.parse(data);
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session?.user) {
     throw new Error("Unauthorized");
   }

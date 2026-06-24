@@ -1,18 +1,15 @@
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Header } from "@/components/common/header";
 import { db } from "@/db";
 import { orderTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import Orders from "./components/orders";
 
 const MyOrdersPage = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session?.user.id) {
     redirect("/login");
   }

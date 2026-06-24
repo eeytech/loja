@@ -2,7 +2,6 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
 import { db } from "@/db";
 import {
@@ -11,12 +10,10 @@ import {
   orderItemTable,
   orderTable,
 } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 export const finishOrder = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session) {
     throw new Error("Unauthorized");
   }

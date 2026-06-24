@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
+import { signUp } from "@/actions/auth/sign-up";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,7 +25,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
 
 const formSchema = z
   .object({
@@ -58,25 +58,22 @@ const SignUpForm = () => {
   });
 
   async function onSubmit(values: FormValues) {
-    await authClient.signUp.email({
+    const result = await signUp({
       name: values.name,
       email: values.email,
       password: values.password,
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/");
-        },
-        onError: (error) => {
-          if (error.error.code === "USER_ALREADY_EXISTS") {
-            toast.error("E-mail já cadastrado.");
-            return form.setError("email", {
-              message: "E-mail já cadastrado.",
-            });
-          }
-          toast.error(error.error.message);
-        },
-      },
     });
+
+    if (!result.success) {
+      toast.error(result.error);
+      if (result.field === "email") {
+        form.setError("email", { message: result.error });
+      }
+      return;
+    }
+
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -152,7 +149,9 @@ const SignUpForm = () => {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit">Criar conta</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Criando conta..." : "Criar conta"}
+              </Button>
             </CardFooter>
           </form>
         </Form>

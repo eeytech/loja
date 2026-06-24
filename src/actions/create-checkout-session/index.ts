@@ -1,17 +1,11 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
-import Stripe from "stripe";
+import { MercadoPagoConfig, Preference } from "mercadopago";
 
 import { db } from "@/db";
-import {
-  cartItemTable,
-  cartTable,
-  orderItemTable,
-  orderTable,
-} from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { orderItemTable, orderTable } from "@/db/schema";
+import { getSession } from "@/lib/session";
 
 import {
   CreateCheckoutSessionSchema,
@@ -21,12 +15,10 @@ import {
 export const createCheckoutSession = async (
   data: CreateCheckoutSessionSchema,
 ) => {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("Stripe secret key is not set");
+  if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    throw new Error("Mercado Pago access token is not set");
   }
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
@@ -46,30 +38,34 @@ export const createCheckoutSession = async (
       productVariant: { with: { product: true } },
     },
   });
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-  const checkoutSession = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "payment",
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/cancel`,
-    metadata: {
-      orderId,
-    },
-    line_items: orderItems.map((orderItem) => {
-      return {
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: `${orderItem.productVariant.product.name} - ${orderItem.productVariant.name}`,
-            description: orderItem.productVariant.product.description,
-            images: [orderItem.productVariant.imageUrl],
-          },
-          // Em centavos
-          unit_amount: orderItem.priceInCents,
-        },
-        quantity: orderItem.quantity,
-      };
-    }),
+  const client = new MercadoPagoConfig({
+    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
   });
-  return checkoutSession;
+  const preference = new Preference(client);
+  const response = await preference.create({
+    body: {
+      items: orderItems.map((orderItem) => ({
+        id: orderItem.productVariant.id,
+        title: `${orderItem.productVariant.product.name} - ${orderItem.productVariant.name}`,
+        description: orderItem.productVariant.product.description ?? undefined,
+        picture_url: orderItem.productVariant.imageUrl,
+        quantity: orderItem.quantity,
+        // Mercado Pago espera valores em reais (float), não em centavos
+        unit_price: orderItem.priceInCents / 100,
+        currency_id: "BRL",
+      })),
+      back_urls: {
+        success: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
+        pending: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/pending`,
+        failure: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/cancel`,
+      },
+      auto_return: "approved",
+      // external_reference é o campo canônico do MP para referenciar pedidos externos
+      external_reference: orderId,
+    },
+  });
+  return {
+    preferenceId: response.id,
+    initPoint: response.init_point,
+  };
 };

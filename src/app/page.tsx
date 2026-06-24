@@ -31,7 +31,7 @@ const Home = async () => {
         <div className="px-5">
           <Image
             src="/banner-01.png"
-            alt="Leve uma vida com estilo"
+            alt="Monte o seu setup gamer com os melhores equipamentos"
             height={0}
             width={0}
             sizes="100vw"
@@ -48,7 +48,7 @@ const Home = async () => {
         <div className="px-5">
           <Image
             src="/banner-02.png"
-            alt="Leve uma vida com estilo"
+            alt="Monte o seu setup gamer com os melhores equipamentos"
             height={0}
             width={0}
             sizes="100vw"

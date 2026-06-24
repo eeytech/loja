@@ -3,8 +3,10 @@
 import { LogInIcon, LogOutIcon, MenuIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import { authClient } from "@/lib/auth-client";
+import { signOut } from "@/actions/auth/sign-out";
+import { useSession } from "@/providers/session-provider";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
@@ -18,11 +20,18 @@ import {
 import { Cart } from "./cart";
 
 export const Header = () => {
-  const { data: session } = authClient.useSession();
+  const { user } = useSession();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.refresh();
+  };
+
   return (
     <header className="flex items-center justify-between p-5">
       <Link href="/">
-        <Image src="/logo.svg" alt="BEWEAR" width={100} height={26.14} />
+        <Image src="/logo.svg" alt="TECHPEAK" width={120} height={30} />
       </Link>
 
       <div className="flex items-center gap-3">
@@ -37,31 +46,31 @@ export const Header = () => {
               <SheetTitle>Menu</SheetTitle>
             </SheetHeader>
             <div className="px-5">
-              {session?.user ? (
+              {user ? (
                 <>
                   <div className="flex justify-between space-y-6">
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage
-                          src={session?.user?.image as string | undefined}
+                          src={user.image as string | undefined}
                         />
                         <AvatarFallback>
-                          {session?.user?.name?.split(" ")?.[0]?.[0]}
-                          {session?.user?.name?.split(" ")?.[1]?.[0]}
+                          {user.name?.split(" ")?.[0]?.[0]}
+                          {user.name?.split(" ")?.[1]?.[0]}
                         </AvatarFallback>
                       </Avatar>
 
                       <div>
-                        <h3 className="font-semibold">{session?.user?.name}</h3>
+                        <h3 className="font-semibold">{user.name}</h3>
                         <span className="text-muted-foreground block text-xs">
-                          {session?.user?.email}
+                          {user.email}
                         </span>
                       </div>
                     </div>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={() => authClient.signOut()}
+                      onClick={handleSignOut}
                     >
                       <LogOutIcon />
                     </Button>

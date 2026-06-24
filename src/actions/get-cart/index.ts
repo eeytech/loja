@@ -1,15 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
-
 import { db } from "@/db";
 import { cartTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 export const getCart = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session?.user) {
     throw new Error("Unauthorized");
   }

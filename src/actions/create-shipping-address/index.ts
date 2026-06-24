@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
 import { db } from "@/db";
 import { shippingAddressTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import {
   CreateShippingAddressSchema,
@@ -17,9 +16,7 @@ export const createShippingAddress = async (
 ) => {
   createShippingAddressSchema.parse(data);
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
 
   if (!session?.user) {
     throw new Error("Unauthorized");

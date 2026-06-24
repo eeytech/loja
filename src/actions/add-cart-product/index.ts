@@ -1,19 +1,16 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 
 import { db } from "@/db";
 import { cartItemTable, cartTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 
 import { AddProductToCartSchema, addProductToCartSchema } from "./schema";
 
 export const addProductToCart = async (data: AddProductToCartSchema) => {
   addProductToCartSchema.parse(data);
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getSession();
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
